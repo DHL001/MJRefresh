@@ -82,27 +82,64 @@ static NSBundle *mj_systemI18nBundle = nil;
     return value;
 }
 
-+ (NSBundle *)mj_defaultI18nBundleWithLanguage:(NSString *)language {
-    if ([language hasPrefix:@"en"]) {
-        language = @"en";
-    } else if ([language hasPrefix:@"zh"]) {
-        if ([language rangeOfString:@"Hans"].location != NSNotFound) {
-            language = @"zh-Hans"; // 简体中文
-        } else { // zh-Hant\zh-HK\zh-TW
-            language = @"zh-Hant"; // 繁體中文
-        }
-    } else if ([language hasPrefix:@"ko"]) {
-        language = @"ko";
-    } else if ([language hasPrefix:@"ru"]) {
-        language = @"ru";
-    } else if ([language hasPrefix:@"uk"]) {
-        language = @"uk";
-    } else {
-        language = @"en";
-    }
++ (NSString *)mj_localizedStringForKey:(NSString *)key value:(NSString *)value
+{
+//    static NSBundle *bundle = nil;
+//    if (bundle == nil) {
+//        NSString *language = MJRefreshConfig.defaultConfig.languageCode;
+//        // 如果配置中没有配置语言
+//        if (!language) {
+//            // （iOS获取的语言字符串比较不稳定）目前框架只处理en、zh-Hans、zh-Hant三种情况，其他按照系统默认处理
+//            language = [NSLocale preferredLanguages].firstObject;
+//        }
+//
+//        if ([language hasPrefix:@"en"]) {
+//            language = @"en";
+//        } else if ([language hasPrefix:@"zh"]) {
+//            if ([language rangeOfString:@"Hans"].location != NSNotFound) {
+//                language = @"zh-Hans"; // 简体中文
+//            } else { // zh-Hant\zh-HK\zh-TW
+//                language = @"zh-Hant"; // 繁體中文
+//            }
+//        } else if ([language hasPrefix:@"ko"]) {
+//            language = @"ko";
+//        } else if ([language hasPrefix:@"ru"]) {
+//            language = @"ru";
+//        } else if ([language hasPrefix:@"uk"]) {
+//            language = @"uk";
+//        } else {
+//            language = @"en";
+//        }
+//
+//        // 从MJRefresh.bundle中查找资源
+//        bundle = [NSBundle bundleWithPath:[[NSBundle mj_refreshBundle] pathForResource:language ofType:@"lproj"]];
+//    }
+//    value = [bundle localizedStringForKey:key value:value table:nil];
+//    return [[NSBundle mainBundle] localizedStringForKey:key value:value table:nil];
     
-    // 从MJRefresh.bundle中查找资源
-    return [NSBundle bundleWithPath:[[NSBundle mj_refreshBundle] pathForResource:language ofType:@"lproj"]];
+    NSString *appLanguage = @"en";
+    NSInteger language = [[[NSUserDefaults standardUserDefaults] objectForKey:@"kLanguageKey"] intValue];
+    //[[kUserDefault objectForKey:kLanguageKey] intValue];
+    if (1 == language) {
+        appLanguage = @"en";
+    } else if (2 == language) {
+        appLanguage = @"zh-Hans";
+    } else {
+        //获取系统语言
+        NSArray *languages = [NSLocale preferredLanguages];
+        NSString *systemlanguage = [languages objectAtIndex:0];
+        if ([systemlanguage containsString:@"en"]) {
+            appLanguage = @"en";
+        } else if ([systemlanguage containsString:@"zh-Hans"]) {
+            appLanguage = @"zh-Hans";
+        } else {
+            appLanguage = @"en";
+        }
+    }
+    NSString *path = [[NSBundle mainBundle] pathForResource:appLanguage ofType:@"lproj"];
+    NSString *realString = [[NSBundle bundleWithPath:path] localizedStringForKey:key value:nil table:@"MainPartLocalize"];
+    
+    return realString;
 }
 @end
 
